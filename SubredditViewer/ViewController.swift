@@ -9,9 +9,10 @@
 import UIKit
 import Alamofire
 
-class ViewController: UIViewController, UISearchBarDelegate {
+class ViewController: UIViewController, UISearchBarDelegate, UIPickerViewDataSource, UIPickerViewDelegate {
 
     var timer = Timer()
+    var interval = 2
     var arrayIndex = 0
     var urlArray: Array<String> = Array.init()
     var headers: HTTPHeaders = [
@@ -20,9 +21,15 @@ class ViewController: UIViewController, UISearchBarDelegate {
     let apiUrl = "https://api.imgur.com/3/gallery/r/"
     
     var keys:NSDictionary = NSDictionary()
+    
+    let pickerData = ["1 second", "2 seconds", "3 seconds", "5 seconds", "10 seconds", "15 seconds", "30 seconds", "1 minute", "2 minutes"]
+    let secondsData = [1, 2, 3, 5, 10, 15, 30, 60, 120]
 
     @IBOutlet weak var mImageView: UIImageView!
     @IBOutlet weak var searchBar: UISearchBar!
+    @IBOutlet weak var toolBar: UIToolbar!
+    @IBOutlet weak var intervalPicker: UIPickerView! = UIPickerView()
+    @IBOutlet weak var intervalButton: UIBarButtonItem!
     
     func loadSubreddit(subreddit: String) {
         self.view.endEditing(true)
@@ -63,10 +70,20 @@ class ViewController: UIViewController, UISearchBarDelegate {
         let tapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(imageTapped(tapGestureRecognizer:)))
         mImageView.isUserInteractionEnabled = true
         mImageView.addGestureRecognizer(tapGestureRecognizer)
+        
+        intervalPicker.isHidden = true
+        intervalPicker.delegate = self
+        intervalPicker.dataSource = self
+        intervalButton.action = #selector(intervalButtonClicked(sender:))
+        
+    }
+    
+    func intervalButtonClicked(sender: UIBarButtonItem){
+        intervalPicker.isHidden = !intervalPicker.isHidden
     }
     
     func startTimer() {
-        self.timer = Timer.scheduledTimer(timeInterval: 2, target: self, selector: #selector(ViewController.update), userInfo: nil, repeats: true)
+        self.timer = Timer.scheduledTimer(timeInterval: TimeInterval(interval), target: self, selector: #selector(ViewController.update), userInfo: nil, repeats: true)
     }
     
     func imageTapped(tapGestureRecognizer: UITapGestureRecognizer){
@@ -81,16 +98,16 @@ class ViewController: UIViewController, UISearchBarDelegate {
     }
     
     func searchBarTextDidBeginEditing(_ searchBar: UISearchBar) {
-        print("Did Begin Editing text: \(searchBar.text)")
+        //print("Did Begin Editing text: \(searchBar.text)")
     }
     
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
-        print("Search Button Clicked: \(searchBar.text)")
+        print("Search Button Clicked: \(searchBar.text ?? "no text entered")")
         loadSubreddit(subreddit: searchBar.text!)
     }
 
     public func searchBarTextDidEndEditing(_ searchBar: UISearchBar) {
-        print("End editing text: \(searchBar.text)")
+        //print("End editing text: \(searchBar.text)")
     }
     
     func update() {
@@ -106,6 +123,28 @@ class ViewController: UIViewController, UISearchBarDelegate {
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
+    }
+    
+    func numberOfComponents(in pickerView: UIPickerView) -> Int {
+        return 1
+    }
+    
+    func pickerView(_ pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
+        return pickerData.count
+    }
+    
+    //MARK: Delegates
+    func pickerView(_ pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
+        return pickerData[row]
+    }
+    
+    func pickerView(_ pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
+        intervalPicker.isHidden = true
+        interval = secondsData[row]
+        if (timer.isValid && urlArray.count > 0){
+            timer.invalidate()
+            startTimer()
+        }
     }
 
 
