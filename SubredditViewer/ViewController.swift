@@ -36,6 +36,7 @@ class ViewController: UIViewController, UISearchBarDelegate, UIPickerViewDataSou
     @IBOutlet weak var intervalButton: UIBarButtonItem!
     @IBOutlet weak var sortButton: UIBarButtonItem!
     @IBOutlet weak var sortPicker: UIPickerView!
+    @IBOutlet weak var indicatorView: UIActivityIndicatorView!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -53,9 +54,14 @@ class ViewController: UIViewController, UISearchBarDelegate, UIPickerViewDataSou
         sortPicker.delegate = self
         sortPicker.dataSource = self
         sortButton.action = #selector(sortButtonClicked(sender:))
+        
+        indicatorView.stopAnimating()
+        indicatorView.isHidden = true
     }
     
     func loadSubreddit(subreddit: String) {
+        indicatorView.isHidden = false
+        indicatorView.startAnimating()
         currentSubreddit = subreddit
         self.view.endEditing(true)
         self.timer.invalidate()
@@ -85,7 +91,7 @@ class ViewController: UIViewController, UISearchBarDelegate, UIPickerViewDataSou
                 print("\(link)")
             }
             if self.urlArray.count != 0{
-                self.startTimer()
+                self.update()
             }
         }
     }
@@ -129,13 +135,23 @@ class ViewController: UIViewController, UISearchBarDelegate, UIPickerViewDataSou
     }
     
     func update() {
+        indicatorView.startAnimating()
+        indicatorView.isHidden = false
+        if (self.timer.isValid){
+            self.timer.invalidate()
+        }
+        
         let urlString = urlArray[arrayIndex % urlArray.count]
         print("Loading \(urlString)")
         let url = URL(string: urlString)
-        if let data = try? Data(contentsOf: url!){ //make sure your image in this url does exist, otherwise unwrap in a if let check / try-catch
+        if let data = try? Data(contentsOf: url!){
             mImageView.image = UIImage(data: data)
         }
         arrayIndex += 1
+        indicatorView.isHidden = true
+        indicatorView.stopAnimating()
+        
+        self.startTimer()
     }
 
     override func didReceiveMemoryWarning() {

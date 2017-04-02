@@ -45,6 +45,12 @@
                                 <rect key="frame" x="0.0" y="260" width="414" height="216"/>
                                 <color key="backgroundColor" cocoaTouchSystemColor="groupTableViewBackgroundColor"/>
                             </pickerView>
+                            <activityIndicatorView opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" fixedFrame="YES" hidesWhenStopped="YES" animating="YES" style="gray" translatesAutoresizingMaskIntoConstraints="NO" id="mVt-L3-uXP">
+                                <rect key="frame" x="197" y="358" width="20" height="20"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <color key="tintColor" cocoaTouchSystemColor="darkTextColor"/>
+                                <color key="color" cocoaTouchSystemColor="viewFlipsideBackgroundColor"/>
+                            </activityIndicatorView>
                         </subviews>
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
@@ -69,6 +75,7 @@
                     <extendedEdge key="edgesForExtendedLayout" bottom="YES"/>
                     <simulatedStatusBarMetrics key="simulatedStatusBarMetrics"/>
                     <connections>
+                        <outlet property="indicatorView" destination="mVt-L3-uXP" id="E51-Kn-QqR"/>
                         <outlet property="intervalButton" destination="3Jt-3A-37o" id="kGW-ey-mMY"/>
                         <outlet property="intervalPicker" destination="ZtS-MJ-gv9" id="DkX-Ch-Ye4"/>
                         <outlet property="mImageView" destination="ldz-C1-MoQ" id="won-YN-Q3i"/>
