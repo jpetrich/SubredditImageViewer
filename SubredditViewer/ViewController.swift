@@ -24,18 +24,44 @@ class ViewController: UIViewController, UISearchBarDelegate, UIPickerViewDataSou
     
     let pickerData = ["1 second", "2 seconds", "3 seconds", "5 seconds", "10 seconds", "15 seconds", "30 seconds", "1 minute", "2 minutes"]
     let secondsData = [1, 2, 3, 5, 10, 15, 30, 60, 120]
-
+    
+    let sortPickerData = ["new", "day", "week", "month", "year", "all"]
+    var sortString = "new"
+    var currentSubreddit:String = ""
+    
     @IBOutlet weak var mImageView: UIImageView!
     @IBOutlet weak var searchBar: UISearchBar!
     @IBOutlet weak var toolBar: UIToolbar!
     @IBOutlet weak var intervalPicker: UIPickerView! = UIPickerView()
     @IBOutlet weak var intervalButton: UIBarButtonItem!
+    @IBOutlet weak var sortButton: UIBarButtonItem!
+    @IBOutlet weak var sortPicker: UIPickerView!
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        searchBar.delegate = self
+        let tapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(imageTapped(tapGestureRecognizer:)))
+        mImageView.isUserInteractionEnabled = true
+        mImageView.addGestureRecognizer(tapGestureRecognizer)
+        
+        intervalPicker.isHidden = true
+        intervalPicker.delegate = self
+        intervalPicker.dataSource = self
+        intervalButton.action = #selector(intervalButtonClicked(sender:))
+        
+        sortPicker.isHidden = true
+        sortPicker.delegate = self
+        sortPicker.dataSource = self
+        sortButton.action = #selector(sortButtonClicked(sender:))
+    }
     
     func loadSubreddit(subreddit: String) {
+        currentSubreddit = subreddit
         self.view.endEditing(true)
         self.timer.invalidate()
         urlArray.removeAll()
-        let subredditUrl = apiUrl + subreddit
+        let subredditUrl = apiUrl + subreddit + "/" + (sortString == "new" ? "time/" : "top/\(sortString)/")
+        print(subredditUrl)
         if let path = Bundle.main.path(forResource: "keys", ofType: "plist") {
             keys = NSDictionary(contentsOfFile: path)!
             let imgurAPIKey = keys["imgurAPIKey"]
@@ -64,22 +90,14 @@ class ViewController: UIViewController, UISearchBarDelegate, UIPickerViewDataSou
         }
     }
     
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        searchBar.delegate = self
-        let tapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(imageTapped(tapGestureRecognizer:)))
-        mImageView.isUserInteractionEnabled = true
-        mImageView.addGestureRecognizer(tapGestureRecognizer)
-        
-        intervalPicker.isHidden = true
-        intervalPicker.delegate = self
-        intervalPicker.dataSource = self
-        intervalButton.action = #selector(intervalButtonClicked(sender:))
-        
-    }
-    
     func intervalButtonClicked(sender: UIBarButtonItem){
         intervalPicker.isHidden = !intervalPicker.isHidden
+        sortPicker.isHidden = true
+    }
+    
+    func sortButtonClicked(sender: UIBarButtonItem){
+        sortPicker.isHidden = !sortPicker.isHidden
+        intervalPicker.isHidden = true
     }
     
     func startTimer() {
@@ -130,20 +148,40 @@ class ViewController: UIViewController, UISearchBarDelegate, UIPickerViewDataSou
     }
     
     func pickerView(_ pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
-        return pickerData.count
+        if (pickerView == intervalPicker){
+            return pickerData.count
+        }
+        else {
+            return sortPickerData.count
+        }
     }
     
     //MARK: Delegates
     func pickerView(_ pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
-        return pickerData[row]
+        if (pickerView == intervalPicker){
+            return pickerData[row]
+        }
+        else{
+            return sortPickerData[row]
+        }
     }
     
     func pickerView(_ pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
-        intervalPicker.isHidden = true
-        interval = secondsData[row]
-        if (timer.isValid && urlArray.count > 0){
-            timer.invalidate()
-            startTimer()
+        if (pickerView == intervalPicker){
+            intervalPicker.isHidden = true
+            interval = secondsData[row]
+            if (timer.isValid && urlArray.count > 0){
+                timer.invalidate()
+                startTimer()
+            }
+        }
+        else{
+            sortPicker.isHidden = true
+            if (sortPickerData[row] != sortString){
+                sortString = sortPickerData[row]
+                sortButton.title = sortString == "new" ? "Sort:new" : "Top:\(sortString)"
+                loadSubreddit(subreddit: currentSubreddit)
+            }
         }
     }
 
