@@ -60,6 +60,9 @@ class ViewController: UIViewController, UISearchBarDelegate, UIPickerViewDataSou
     }
     
     func loadSubreddit(subreddit: String) {
+        if (subreddit == ""){
+            return
+        }
         indicatorView.isHidden = false
         indicatorView.startAnimating()
         currentSubreddit = subreddit
